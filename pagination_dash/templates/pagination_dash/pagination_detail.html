@@ -1,0 +1,445 @@
+{% extends 'pagination_dash/base.html' %}
+{% load pagination_filters %}
+
+{% block title %}Report Details - {{ plant_name }} - {{ report.issue_date }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'pagination_dash:pagination_list' plant_id %}">Records</a></li>
+<li class="breadcrumb-item active">{{ report.issue_date|date:"d M, Y" }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-file-earmark-text text-blue-600"></i>
+                <span>Pagination Report Details</span>
+            </h1>
+            <p class="mt-2 text-sm text-gray-500">{{ plant_name }} - {{ report.issue_date|date:"d M, Y" }}</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex space-x-2">
+            <a href="{% url 'pagination_dash:pagination_update' plant_id report.pk %}"
+               class="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg shadow-md transition-colors font-medium">
+                <i class="bi bi-pencil"></i>
+                <span>Edit</span>
+            </a>
+            <a href="{% url 'pagination_dash:pagination_delete' plant_id report.pk %}"
+               class="inline-flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-md transition-colors font-medium">
+                <i class="bi bi-trash"></i>
+                <span>Delete</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Report Information -->
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-info-circle text-blue-600"></i>
+                <span>Report Information</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                    <h6 class="text-sm font-medium text-gray-500 mb-1">Plant</h6>
+                    <p class="text-base font-semibold text-gray-900">{{ report.plant_name }}</p>
+                </div>
+                <div>
+                    <h6 class="text-sm font-medium text-gray-500 mb-1">Plant ID</h6>
+                    <p class="text-base"><code class="bg-gray-100 px-2 py-1 rounded text-sm">{{ report.plant_id }}</code></p>
+                </div>
+                <div>
+                    <h6 class="text-sm font-medium text-gray-500 mb-1">Issue Date</h6>
+                    <p class="text-base font-semibold text-gray-900">{{ report.issue_date|date:"d M, Y" }}</p>
+                </div>
+                <div>
+                    <h6 class="text-sm font-medium text-gray-500 mb-1">Created</h6>
+                    <p class="text-base text-gray-700">{{ report.created_at|date:"d M, Y H:i" }}</p>
+                </div>
+            </div>
+
+            {% if report.created_by %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h6 class="text-sm font-medium text-gray-500 mb-1">Created By</h6>
+                <p class="text-base text-gray-700">{{ report.created_by.username }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Book Details -->
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-book text-blue-600"></i>
+                <span>Book Details</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Book Name
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                SNP Pages
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                GNP Pages Type
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                GNP Count
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Total Pages
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                No. of GNP Jackets
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for book in report.books.all %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900 border-b border-gray-200">
+                                {{ book.book_name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ book.snp_pages }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-200">
+                                {{ book.gnp_pages_type|default:"-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ book.gnp_pages_count }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center font-semibold text-gray-900 border-b border-gray-200">
+                                {{ book.total_pages }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ book.number_of_gnp_jackets }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        <!-- Totals Row -->
+                        <tr class="bg-blue-50">
+                            <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
+                                TOTAL
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-900">
+                                {{ total_snp }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-900">
+                                -
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-900">
+                                {{ total_gnp }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-900">
+                                {{ total_pages }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center font-bold text-gray-900">
+                                {{ total_jackets }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="bi bi-info-circle text-blue-500 text-xl mt-0.5 mr-3"></i>
+                        <p class="text-sm text-blue-700">
+                            <span class="font-semibold">Summary:</span>
+                            {{ book_count }} book{{ book_count|pluralize }} |
+                            {{ total_pages }} total pages
+                            ({{ total_snp }} SNP + {{ total_gnp }} GNP) |
+                            {{ total_jackets }} GNP jacket{{ total_jackets|pluralize }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ET Information (Only show if plant has ET and value is not None) -->
+    {% if report.gnp_info and report.gnp_info.et_had_2_books is not None %}
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-newspaper text-blue-600"></i>
+                <span>ET Information</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <div class="flex items-center space-x-2">
+                <input class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                       type="checkbox"
+                       {% if report.gnp_info.et_had_2_books %}checked{% endif %}
+                       disabled>
+                <label class="text-sm text-gray-700">
+                    ET had 2 Books
+                </label>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- GNP Information (Only show if plant has GNP publications) -->
+    {% if has_gnp %}
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-newspaper text-blue-600"></i>
+                <span>GNP Information</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <div class="mb-6">
+                <h6 class="text-sm font-medium text-gray-500 mb-3">Publications:</h6>
+                <div class="grid grid-cols-1 md:grid-cols-{{ gnp_publications|length }} gap-4">
+                    {% for pub in gnp_publications %}
+                    <div class="flex items-center space-x-2">
+                        <input class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                               type="checkbox"
+                               {% if report.gnp_info|getattr:pub.field_name %}checked{% endif %}
+                               disabled>
+                        <label class="text-sm text-gray-700">
+                            {{ pub.display_label }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if active_publications %}
+            <div class="mb-6">
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="bi bi-check-circle text-green-500 text-xl mt-0.5 mr-3"></i>
+                        <p class="text-sm text-green-700">
+                            <span class="font-semibold">Active Publications:</span>
+                            {{ active_publications|join:", " }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if report.gnp_info.remarks %}
+            <div>
+                <h6 class="text-sm font-medium text-gray-500 mb-2">GNP Remarks:</h6>
+                <p class="border border-gray-200 p-4 rounded-lg bg-gray-50 text-sm text-gray-700">{{ report.gnp_info.remarks }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Auto-Collated Books -->
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-layers text-blue-600"></i>
+                <span>Auto-Collated Books</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            {% if report.auto_collated_groups %}
+            <div class="space-y-3">
+                {% for group in report.auto_collated_groups %}
+                <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                    <p class="text-xs font-medium text-gray-600 mb-2">Group {{ forloop.counter }}</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for book in group %}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ book }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-sm text-gray-500 italic">No auto-collated groups recorded.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Competitor Data -->
+    {% if report.competitors.all %}
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-graph-up text-blue-600"></i>
+                <span>Competitor Data</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 border border-gray-200 rounded-lg">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Competitor
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                SNP Pages
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                GNP Pages
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Total Pages
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                GNP Jkts (Main)
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                GNP Jkts (Supp)
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Total Jkts
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Innovation
+                            </th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
+                                Comment
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for competitor in report.competitors.all %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-4 py-4 whitespace-nowrap font-semibold text-gray-900 border-b border-gray-200">
+                                {{ competitor.competitor_name }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ competitor.snp_pages }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ competitor.gnp_pages }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center font-semibold text-gray-900 border-b border-gray-200">
+                                {{ competitor.total_pages }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ competitor.gnp_jkts_main }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 border-b border-gray-200">
+                                {{ competitor.gnp_jkts_supplement }}
+                            </td>
+                            <td class="px-4 py-4 whitespace-nowrap text-center font-semibold text-gray-900 border-b border-gray-200">
+                                {{ competitor.total_gnp_jkts }}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-700 border-b border-gray-200">
+                                {% if competitor.innovation %}
+                                    <div class="flex flex-wrap gap-1">
+                                        {% for innovation_item in competitor.innovation %}
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="bi bi-lightbulb-fill mr-1"></i>
+                                            {{ innovation_item }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-gray-400">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-700 border-b border-gray-200">
+                                {{ competitor.comment|default:"-" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="bi bi-graph-up-arrow text-purple-500 text-xl mt-0.5 mr-3"></i>
+                        <p class="text-sm text-purple-700">
+                            <span class="font-semibold">Competitor Summary:</span>
+                            {{ competitor_count }} competitor{{ competitor_count|pluralize }} tracked
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Remarks -->
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-chat-left-text text-blue-600"></i>
+                <span>Remarks</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% if report.remarks_toi %}
+                <div>
+                    <h6 class="text-sm font-medium text-gray-500 mb-2">TOI Remarks:</h6>
+                    <p class="border border-gray-200 p-4 rounded-lg bg-gray-50 text-sm text-gray-700">{{ report.remarks_toi }}</p>
+                </div>
+                {% endif %}
+
+                {% if report.remarks_others %}
+                <div>
+                    <h6 class="text-sm font-medium text-gray-500 mb-2">Others Remarks:</h6>
+                    <p class="border border-gray-200 p-4 rounded-lg bg-gray-50 text-sm text-gray-700">{{ report.remarks_others }}</p>
+                </div>
+                {% endif %}
+
+                {% if not report.remarks_toi and not report.remarks_others %}
+                <div class="col-span-2">
+                    <p class="text-sm text-gray-500 italic">No remarks available</p>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if report.first_time_execution_info %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h6 class="text-sm font-medium text-gray-500 mb-2">First Time Execution Info:</h6>
+                <p class="border border-gray-200 p-4 rounded-lg bg-gray-50 text-sm text-gray-700">{{ report.first_time_execution_info }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="px-6 py-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <a href="{% url 'pagination_dash:pagination_list' plant_id %}"
+                   class="inline-flex items-center justify-center space-x-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back to List</span>
+                </a>
+                <div class="flex space-x-2">
+                    <a href="{% url 'pagination_dash:pagination_update' plant_id report.pk %}"
+                       class="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors font-medium">
+                        <i class="bi bi-pencil"></i>
+                        <span>Edit Report</span>
+                    </a>
+                    <a href="{% url 'pagination_dash:pagination_delete' plant_id report.pk %}"
+                       class="inline-flex items-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium">
+                        <i class="bi bi-trash"></i>
+                        <span>Delete Report</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

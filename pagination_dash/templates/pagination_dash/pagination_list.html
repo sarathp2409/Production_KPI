@@ -1,0 +1,236 @@
+{% extends 'pagination_dash/base.html' %}
+
+{% block title %}Reports - {{ plant_name }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Records</li>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-list-ul text-blue-600"></i>
+                <span>Pagination Records</span>
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">{{ plant_name }}</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{% url 'pagination_dash:pagination_create' plant_id %}"
+               class="inline-flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-md transition-colors font-medium">
+                <i class="bi bi-plus-circle"></i>
+                <span>New Record</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-lg shadow-md mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-filter text-blue-600"></i>
+                <span>Search & Filters</span>
+            </h3>
+        </div>
+        <div class="px-6 py-5">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div class="md:col-span-4">
+                    <label for="search_date" class="block text-sm font-medium text-gray-700 mb-2">
+                        Search by Exact Date
+                    </label>
+                    <input type="date"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           id="search_date"
+                           name="search_date"
+                           value="{{ search_date }}">
+                </div>
+                <div class="md:col-span-3">
+                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">
+                        Start Date
+                    </label>
+                    <input type="date"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           id="start_date"
+                           name="start_date"
+                           value="{{ start_date }}">
+                </div>
+                <div class="md:col-span-3">
+                    <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">
+                        End Date
+                    </label>
+                    <input type="date"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           id="end_date"
+                           name="end_date"
+                           value="{{ end_date }}">
+                </div>
+                <div class="md:col-span-2 flex items-end">
+                    <button type="submit"
+                            class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                        <i class="bi bi-search"></i>
+                        <span>Search</span>
+                    </button>
+                </div>
+                {% if search_date or start_date or end_date %}
+                <div class="md:col-span-12">
+                    <a href="{% url 'pagination_dash:pagination_list' plant_id %}"
+                       class="inline-flex items-center space-x-2 px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Clear Filters</span>
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="bg-white rounded-lg shadow-md">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                <i class="bi bi-table text-blue-600"></i>
+                <span>Records</span>
+            </h3>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                {{ page_obj.paginator.count }} total
+            </span>
+        </div>
+        <div class="px-6 py-5">
+            {% if reports %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Issue Date
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Books
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                SNP Pages
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                GNP Pages
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total Pages
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Created
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for report in reports %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="font-semibold text-gray-900">{{ report.issue_date|date:"d M, Y" }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+                                    {{ report.book_count|default:0 }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                {{ report.total_snp|default:0 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                {{ report.total_gnp|default:0 }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="font-semibold text-gray-900">{{ report.total_all_pages|default:0 }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ report.created_at|date:"d M, Y H:i" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="inline-flex rounded-lg shadow-sm" role="group">
+                                    <a href="{% url 'pagination_dash:pagination_detail' plant_id report.pk %}"
+                                       class="px-3 py-2 text-sm font-medium text-blue-600 bg-white border border-gray-300 rounded-l-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                                       title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'pagination_dash:pagination_update' plant_id report.pk %}"
+                                       class="px-3 py-2 text-sm font-medium text-yellow-600 bg-white border-t border-b border-gray-300 hover:bg-yellow-50 hover:text-yellow-700 transition-colors"
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'pagination_dash:pagination_delete' plant_id report.pk %}"
+                                       class="px-3 py-2 text-sm font-medium text-red-600 bg-white border border-gray-300 rounded-r-lg hover:bg-red-50 hover:text-red-700 transition-colors"
+                                       title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav class="flex items-center justify-center mt-6" aria-label="Page navigation">
+                <ul class="inline-flex items-center space-x-2">
+                    {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page=1{% if search_date %}&search_date={{ search_date }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            First
+                        </a>
+                    </li>
+                    <li>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_date %}&search_date={{ search_date }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <li>
+                        <span class="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li>
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_date %}&search_date={{ search_date }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Next
+                        </a>
+                    </li>
+                    <li>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_date %}&search_date={{ search_date }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}"
+                           class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Last
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg text-center">
+                <i class="bi bi-info-circle text-blue-500 text-2xl mb-2"></i>
+                <p class="text-blue-700 font-medium">
+                    {% if search_date or start_date or end_date %}
+                        No reports found matching your search criteria.
+                    {% else %}
+                        No pagination reports available for {{ plant_name }}.
+                        <a href="{% url 'pagination_dash:pagination_create' plant_id %}" class="underline hover:text-blue-800">Create the first report</a>.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

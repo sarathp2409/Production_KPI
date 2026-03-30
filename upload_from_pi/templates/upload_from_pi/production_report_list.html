@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aggregated Production Reports</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">Aggregated Production Reports</h1>
+
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Issue Date</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plant Name</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled LPRS</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scheduled Print Finish</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latest Editorial Release</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Latest Production End</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Delay vs 04:00</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Efficiency</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Additional folders</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">UV Runs</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reports Count</th>
+              
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% load tz %}
+            {% for report in aggregated_reports %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ report.issue_date|date:"Y-m-d" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{ report.plant_name }}</td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.scheduled_lprs %}
+                  {{ report.scheduled_lprs|time:"H:i" }}
+                {% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.scheduled_print_finish %}
+                  {{ report.scheduled_print_finish|time:"H:i" }}
+                {% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.latest_editorial_release %}
+                  {% timezone "Asia/Kolkata" %}{{ report.latest_editorial_release|date:"Y-m-d H:i" }}{% endtimezone %}
+                {% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.production_end %}
+                  {% timezone "Asia/Kolkata" %}{{ report.production_end|date:"Y-m-d H:i" }}{% endtimezone %}
+                {% else %}<span class="text-gray-400 italic">—</span>{% endif %}
+              </td>
+
+              <!-- Corrected delay values computed server-side -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.delay_minutes == 0 %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" title="On or before 04:00 IST">On time</span>
+                {% else %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" title="{{ report.delay_minutes }} minute{{ report.delay_minutes|pluralize }} late">{{ report.delay_minutes }}</span>
+                {% endif %}
+              </td>
+
+              <!-- Efficiency values computed server-side -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.efficiency_minutes == 0 %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800" title="No efficiency gain/loss">0 min</span>
+                {% elif report.efficiency_minutes > 0 %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" title="Efficiency gain of {{ report.efficiency_minutes|floatformat:1 }} minute{{ report.efficiency_minutes|pluralize }}">+{{ report.efficiency_minutes|floatformat:1 }} min</span>
+                {% else %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" title="Efficiency loss of {{ report.efficiency_minutes|floatformat:1|slice:"1:" }} minute{{ report.efficiency_minutes|pluralize }}">{{ report.efficiency_minutes|floatformat:1 }} min</span>
+                {% endif %}
+              </td>
+
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ report.additional_folders_run|default:0 }} folder{{ report.additional_folders_run|pluralize }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                {% if report.uv_runs_count > 0 %}
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{{ report.uv_runs_count }} UV run{{ report.uv_runs_count|pluralize }}</span>
+                {% else %}
+                  <span class="text-gray-400 italic">No UV runs</span>
+                {% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">{{ report.total_reports_count|default:0 }} report{{ report.total_reports_count|pluralize }}</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="12" class="px-6 py-12 text-center text-sm text-gray-500">
+                No aggregated production reports found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

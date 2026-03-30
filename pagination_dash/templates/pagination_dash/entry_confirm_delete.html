@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Delete Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="max-w-2xl mx-auto px-4 py-12">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <h1 class="text-xl font-semibold text-gray-900">Delete Entry</h1>
+        <p class="text-gray-600 mt-2">Are you sure you want to delete the entry for <span class="font-medium">{{ entry.plant_name }}</span> on <span class="font-medium">{{ entry.issue_date }}</span>? This action cannot be undone.</p>
+
+        <form method="post" class="mt-6 flex items-center justify-end gap-3">
+          {% csrf_token %}
+          <a href="{% url 'pagination_dash:entry_detail' pk=entry.pk %}" class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</a>
+          <button type="submit" class="inline-flex items-center px-5 py-2.5 rounded-md bg-red-600 text-white font-medium shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">Delete</button>
+        </form>
+      </div>
+    </div>
+  </body>
+  </html>
+

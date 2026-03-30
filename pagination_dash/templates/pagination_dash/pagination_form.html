@@ -1,0 +1,1126 @@
+{% extends 'pagination_dash/base.html' %}
+{% load pagination_filters %}
+
+{% block title %}{{ action }} Pagination Report - {{ plant_name }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'pagination_dash:pagination_list' plant_id %}">Reports</a></li>
+<li class="breadcrumb-item active">{{ action }}</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Style for innovation checkboxes */
+    .comp-innovation-checkbox {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 0.25rem;
+        border: 1px solid #d1d5db;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .comp-innovation-checkbox:checked {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+    }
+    .comp-innovation-checkbox:focus {
+        outline: none;
+        ring: 2px;
+        ring-color: #3b82f6;
+        ring-opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 flex items-center space-x-2">
+            <i class="bi bi-file-earmark-text text-blue-600"></i>
+            <span>{{ action }} Pagination record - {{ plant_name }}</span>
+        </h1>
+    </div>
+
+    <form method="post" id="paginationForm">
+        {% csrf_token %}
+
+        <!-- Main Report Fields -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <!-- <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-calendar text-blue-600"></i>
+                    <span>Report Information</span>
+                </h3>
+            </div> -->
+            <div class="px-6 py-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="{{ combined_form.report_form.issue_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Issue Date <span class="text-red-600">*</span>
+                        </label>
+                        {{ combined_form.report_form.issue_date }}
+                        {% if combined_form.report_form.issue_date.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ combined_form.report_form.issue_date.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {{ combined_form.report_form.plant_id }}
+                {{ combined_form.report_form.plant_name }}
+                {{ combined_form.report_form.auto_collated_groups }}
+
+                {% if combined_form.report_form.non_field_errors %}
+                <div class="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                    <p class="text-sm text-red-700">{{ combined_form.report_form.non_field_errors }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Book Details Formset -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-book text-blue-600"></i>
+                    <span>TOI, TIMS and Supplements <span class="text-sm">- Maximum pagination zone (Details by 7:00 AM )</span></span>
+                </h3>
+                <button type="button"
+                        class="inline-flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm"
+                        id="addBookBtn">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add New Book</span>
+                </button>
+            </div>
+            <div class="px-6 py-5">
+                {{ combined_form.book_formset.management_form }}
+
+                <div id="bookFormset" class="space-y-4">
+                    <!-- Book Forms will be rendered here -->
+                    {% for form in combined_form.book_formset %}
+                    <div class="book-form-row border border-gray-200 rounded-lg p-4 bg-gray-50" data-form-index="{{ forloop.counter0 }}">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Book Name</label>
+                                {{ form.book_name }}
+                                {{ form.order }}
+                                {{ form.id }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">SNP Pages</label>
+                                {{ form.snp_pages }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">GNP Innovation</label>
+                                {{ form.gnp_pages_type }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">GNP Pages</label>
+                                {{ form.gnp_pages_count }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">Total Pages</label>
+                                {{ form.total_pages }}
+                            </div>
+                            <div class="md:col-span-1">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">GNP Clients</label>
+                                {{ form.number_of_gnp_jackets }}
+                            </div>
+                            <div class="md:col-span-1">
+                                {% if forloop.counter0 >= 3 %}
+                                <button type="button" class="w-full px-2 py-2 bg-transparent hover:bg-red-50 text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-300 rounded-lg transition-all remove-book-btn">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                <div style="display:none;">
+                                    {% if form.DELETE %}
+                                    {{ form.DELETE }}
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- B-2 Checkboxes Row (Hidden by default, shown for TOI B-2 and TIMS B-2) -->
+                        <div class="b2-checkboxes-row mt-3 pl-4 py-2 bg-blue-50 rounded-lg border border-blue-100" style="display:none;">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                                <div class="md:col-span-2 flex items-center text-xs text-gray-600">
+                                    <i class="bi bi-info-circle mr-1"></i>
+                                    <span>B-2 Properties:</span>
+                                </div>
+                                <div class="md:col-span-3 flex items-center space-x-2">
+                                    {{ form.balloon_printed }}
+                                    <label for="{{ form.balloon_printed.id_for_label }}" class="text-sm text-gray-700 cursor-pointer">
+                                        Balloon Printed
+                                    </label>
+                                </div>
+                                <div class="md:col-span-3 flex items-center space-x-2">
+                                    {{ form.has_masthead }}
+                                    <label for="{{ form.has_masthead.id_for_label }}" class="text-sm text-gray-700 cursor-pointer">
+                                        Has Masthead
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="mt-3 bg-red-50 border-l-4 border-red-500 p-3 rounded-lg">
+                            <p class="text-sm text-red-700">{{ form.errors }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Totals Row -->
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-12 gap-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div class="md:col-span-2">
+                        <span class="font-semibold text-gray-900">Total:</span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="text-gray-900"><span id="total-snp" class="font-semibold">0</span> pages</span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="text-gray-500">-</span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="text-gray-900"><span id="total-gnp" class="font-semibold text-gray-900">0</span> pages</span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <span class="text-gray-900"><span id="total-pages" class="font-bold">0</span> pages</span>
+                    </div>
+                    <div class="md:col-span-1">
+                        <span id="total-jackets" class="font-semibold text-gray-900">0</span>
+                    </div>
+                </div>
+
+                {% if combined_form.book_formset.non_form_errors %}
+                <div class="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                    <p class="text-sm text-red-700">{{ combined_form.book_formset.non_form_errors }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ET Information (Only show if plant has ET) -->
+        {% if 'et_had_2_books' in combined_form.gnp_form.fields %}
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-newspaper text-blue-600"></i>
+                    <span>ET Information</span>
+                </h3>
+            </div>
+            <div class="px-6 py-5">
+                <div class="flex items-center space-x-2">
+                    {{ combined_form.gnp_form.et_had_2_books }}
+                    <label class="text-sm text-gray-700" for="id_gnp-et_had_2_books">
+                        {{ combined_form.gnp_form.et_had_2_books.label }}
+                    </label>
+                </div>
+                <p class="mt-2 text-xs text-gray-500">Check if Economic Times publication had 2 books for this issue</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- GNP Information (Only show if plant has GNP publications) -->
+        {% if has_gnp %}
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-newspaper text-blue-600"></i>
+                    <span>GNP Information</span>
+                </h3>
+            </div>
+            <div class="px-6 py-5">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Publications:</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {% for pub in gnp_publications %}
+                        <div class="flex items-center space-x-2 {% if pub.field_name == 'et_b1' or pub.field_name == 'et_b2' %}et-book-checkbox{% endif %} {% if pub.field_name == 'et' %}et-single-checkbox{% endif %}"
+                             {% if pub.field_name == 'et_b1' or pub.field_name == 'et_b2' %}style="display:none;"{% endif %}>
+                            {{ combined_form.gnp_form|get_field:pub.field_name }}
+                            <label class="text-sm text-gray-700" for="id_gnp-{{ pub.field_name }}">
+                                {{ pub.display_label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ combined_form.gnp_form.remarks.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ combined_form.gnp_form.remarks.label }}
+                    </label>
+                    {{ combined_form.gnp_form.remarks }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Remarks -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-chat-left-text text-blue-600"></i>
+                    <span>Extra Miles (if any)</span>
+                </h3>
+            </div>
+            <div class="px-6 py-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="{{ combined_form.report_form.remarks_toi.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ combined_form.report_form.remarks_toi.label }}
+                        </label>
+                        {{ combined_form.report_form.remarks_toi }}
+                    </div>
+                    <div>
+                        <label for="{{ combined_form.report_form.remarks_others.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ combined_form.report_form.remarks_others.label }}
+                        </label>
+                        {{ combined_form.report_form.remarks_others }}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ combined_form.report_form.first_time_execution_info.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ combined_form.report_form.first_time_execution_info.label }}
+                    </label>
+                    {{ combined_form.report_form.first_time_execution_info }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Auto-Collated Books -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-layers text-blue-600"></i>
+                    <span>Auto-Collated Books</span>
+                </h3>
+                <button type="button"
+                        class="inline-flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm"
+                        id="addAutoCollatedGroupBtn">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Group</span>
+                </button>
+            </div>
+            <div class="px-6 py-5">
+                <p class="text-xs text-gray-500 mb-4">
+                    Select the books that were auto-collated together. Add multiple groups if needed.
+                </p>
+                <div id="autoCollatedGroups" class="space-y-4"></div>
+                <p id="autoCollatedEmptyState" class="text-sm text-gray-500 italic">No auto-collated groups added.</p>
+            </div>
+        </div>
+
+        <!-- Competitor Data -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <i class="bi bi-graph-up text-blue-600"></i>
+                    <span>Competitor Data <span class="text-sm"> (Details by 10:00 AM) </span></span>
+                </h3>
+                <button type="button"
+                        class="inline-flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium text-sm"
+                        id="addCompetitorBtn">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Competitor</span>
+                </button>
+            </div>
+            <div class="px-6 py-5">
+                {{ combined_form.competitor_formset.management_form }}
+
+                <div id="competitorFormset" class="space-y-6">
+                    <!-- Competitor Forms will be rendered here -->
+                    {% for form in combined_form.competitor_formset %}
+                    <div class="competitor-form-row border-2 border-gray-300 rounded-lg p-5 bg-gray-50" data-form-index="{{ forloop.counter0 }}">
+                        {{ form.id }}
+
+                        <!-- Competitor Header: Name and Remove Button -->
+                        <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-300">
+                            <div class="flex-1 max-w-md">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="bi bi-building text-blue-600 mr-1"></i>
+                                    Competitor Name <span class="text-red-600">*</span>
+                                </label>
+                                {{ form.competitor_name }}
+                            </div>
+                            <button type="button" class="ml-4 px-3 py-2 bg-transparent hover:bg-red-50 text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-300 rounded-lg transition-all remove-competitor-btn">
+                                <i class="bi bi-trash mr-1"></i>
+                                <span class="text-xs">Remove</span>
+                            </button>
+                            <div style="display:none;">
+                                {% if form.DELETE %}
+                                {{ form.DELETE }}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Book Details Section -->
+                        <div class="mb-4">
+                            <h4 class="text-md font-semibold text-gray-800 mb-1 flex items-center">
+                                <i class="bi bi-book text-blue-600 mr-2"></i>
+                                Book Details 
+                            </h4>
+                            <p class="text-xs text-gray-700 mb-3">(Sum of all Main Books in Main & all Supplements in Supplement)</p>
+
+                            {% if forloop.counter0 in combined_form.competitor_book_formsets %}
+                                {% with book_formset=combined_form.competitor_book_formsets|get_item:forloop.counter0 %}
+                                    {{ book_formset.management_form }}
+
+                                    <div class="space-y-3">
+                                        {% for book_form in book_formset %}
+                                        <div class="bg-white border border-gray-200 rounded-lg p-4">
+                                            {{ book_form.id }}
+                                            <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-end">
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Book Type</label>
+                                                    {{ book_form.book_type }}
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">SNP Pages</label>
+                                                    {{ book_form.snp_pages }}
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">GNP Innovation</label>
+                                                    {{ book_form.gnp_pages_type }}
+                                                </div>
+                                                <div class="md:col-span-1">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">GNP Pgs</label>
+                                                    {{ book_form.gnp_pages_count }}
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Total Pages</label>
+                                                    {{ book_form.total_pages }}
+                                                </div>
+                                                <div class="md:col-span-2">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">GNP Clients</label>
+                                                    {{ book_form.number_of_gnp_jacket }}
+                                                </div>
+                                                <div class="md:col-span-1">
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">No. of Books</label>
+                                                    {{ book_form.number_of_books }}
+                                                </div>
+                                            </div>
+                                            {% if book_form.errors %}
+                                            <div class="mt-2 bg-red-50 border-l-4 border-red-500 p-2 rounded">
+                                                <p class="text-xs text-red-700">{{ book_form.errors }}</p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endwith %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Innovation Section -->
+                        <div class="mb-4 pt-4 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">
+                                <i class="bi bi-lightbulb text-yellow-500 mr-1"></i>
+                                Innovation <span class="text-xs text-gray-500">(Select all that apply)</span>
+                            </label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                {% for choice in form.innovation %}
+                                <div class="flex items-center space-x-2 p-2 bg-white hover:bg-gray-50 rounded border border-gray-200">
+                                    {{ choice.tag }}
+                                    <label for="{{ choice.id_for_label }}" class="text-sm text-gray-700 cursor-pointer select-none flex-1">
+                                        {{ choice.choice_label }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Comment Section -->
+                        <div class="pt-4 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="bi bi-chat-text text-blue-600 mr-1"></i>
+                                Comment
+                            </label>
+                            {{ form.comment }}
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="mt-4 bg-red-50 border-l-4 border-red-500 p-3 rounded-lg">
+                            <p class="text-sm text-red-700">{{ form.errors }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if combined_form.competitor_formset.non_form_errors %}
+                <div class="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                    <p class="text-sm text-red-700">{{ combined_form.competitor_formset.non_form_errors }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Display nested book formset errors -->
+                {% for idx, book_formset in combined_form.competitor_book_formsets.items %}
+                    {% if book_formset.non_form_errors %}
+                    <div class="mt-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                        <p class="text-sm text-red-700"><strong>Competitor {{ idx|add:1 }} Books:</strong> {{ book_formset.non_form_errors }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="bg-white rounded-lg shadow-md">
+            <div class="px-6 py-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                    <a href="{% url 'pagination_dash:pagination_list' plant_id %}"
+                       class="inline-flex items-center justify-center space-x-2 px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors font-medium">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Cancel</span>
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">
+                        <i class="bi bi-check-circle"></i>
+                        <span>{{ submit_text }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Empty form template for adding new books -->
+<div id="empty-book-form" style="display: none;">
+    <!-- This will be populated by JavaScript -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// GNP Type to Page Count Mapping
+const GNP_TYPE_MAPPING = {
+    '2 Pg Jkt': 2,
+    '4 Pg Jkt - 2 diff clients': 4,
+    '4 Pg Vantage': 4,
+    '4 Pg Power Jkt': 4,
+    '8 Pg Super-pano': 8,
+    '6 Pg GNP': 6,
+    '8 Pg GNP': 8
+};
+
+$(document).ready(function() {
+    console.log('Document ready - initializing pagination form');
+    console.log('Found book rows:', $('.book-form-row').length);
+    console.log('jQuery version:', $.fn.jquery);
+
+    // Test alert to confirm JavaScript is running
+    // alert('JavaScript loaded! Check console for debug info.');
+
+    // Initialize form
+    initializeForm();
+
+    // Auto-collated groups
+    initializeAutoCollatedGroups();
+
+    // Add auto-collated group button
+    $('#addAutoCollatedGroupBtn').click(function() {
+        addAutoCollatedGroup();
+    });
+
+    // Remove auto-collated group button
+    $(document).on('click', '.remove-auto-collated-btn', function() {
+        removeAutoCollatedGroup($(this).closest('.auto-collated-group'));
+    });
+
+    // Update auto-collated groups on change
+    $(document).on('change', '.auto-collated-select', function() {
+        updateAutoCollatedValue();
+    });
+
+    // Ensure hidden field is updated before submit
+    $('#paginationForm').on('submit', function() {
+        updateAutoCollatedValue();
+    });
+
+    // Add book button
+    $('#addBookBtn').click(function() {
+        addNewBook();
+    });
+
+    // Remove book button
+    $(document).on('click', '.remove-book-btn', function() {
+        removeBook($(this).closest('.book-form-row'));
+    });
+
+    // Auto-calculate on change
+    $(document).on('change', '.snp-pages-input, .gnp-type-select', function() {
+        console.log('Change event triggered');
+        updateBookCalculations($(this).closest('.book-form-row'));
+        calculateTotals();
+    });
+
+    // Also bind input event for real-time updates
+    $(document).on('input', '.snp-pages-input', function() {
+        console.log('Input event triggered');
+        updateBookCalculations($(this).closest('.book-form-row'));
+        calculateTotals();
+    });
+
+    // Calculate totals on load
+    calculateTotals();
+
+    // === Competitor Form Handlers ===
+    initializeCompetitorForms();
+
+    // Add competitor button
+    $('#addCompetitorBtn').click(function() {
+        addNewCompetitor();
+    });
+
+    // Remove competitor button
+    $(document).on('click', '.remove-competitor-btn', function() {
+        removeCompetitor($(this).closest('.competitor-form-row'));
+    });
+
+    // Auto-calculate competitor book totals on change
+    $(document).on('input change', '.comp-book-snp-input', function() {
+        updateCompetitorBookCalculations($(this).closest('.bg-white'));
+    });
+
+    $(document).on('change', '.comp-book-gnp-type-select', function() {
+        updateCompetitorBookCalculations($(this).closest('.bg-white'));
+    });
+
+    // === ET Fields Toggle Handler ===
+    initializeETFieldsToggle();
+
+    // Bind change event for et_had_2_books checkbox
+    $('#id_gnp-et_had_2_books').on('change', function() {
+        toggleETFields();
+    });
+});
+
+function initializeForm() {
+    // Bind existing forms and trigger calculations
+    $('.book-form-row').each(function() {
+        const $row = $(this);
+        bindFormEvents($row);
+        // Trigger calculation for existing values
+        updateBookCalculations($row);
+        // Initialize checkbox visibility
+        toggleB2Checkboxes($row);
+    });
+}
+
+function bindFormEvents($row) {
+    $row.find('.snp-pages-input').on('input change', function() {
+        updateBookCalculations($row);
+        calculateTotals();
+    });
+
+    $row.find('.gnp-type-select').on('change', function() {
+        updateBookCalculations($row);
+        calculateTotals();
+    });
+
+    $row.find('.book-name-select').on('change', function() {
+        toggleB2Checkboxes($row);
+        refreshAutoCollatedOptions();
+    });
+}
+
+function updateBookCalculations($row) {
+    console.log('updateBookCalculations called for row:', $row);
+
+    const snpInput = $row.find('.snp-pages-input');
+    const gnpTypeSelect = $row.find('.gnp-type-select');
+    const gnpCountInput = $row.find('.gnp-count-input');
+    const totalInput = $row.find('.total-pages-input');
+
+    console.log('Found elements:', {
+        snpInput: snpInput.length,
+        gnpTypeSelect: gnpTypeSelect.length,
+        gnpCountInput: gnpCountInput.length,
+        totalInput: totalInput.length
+    });
+
+    const snpPages = parseInt(snpInput.val()) || 0;
+    const gnpType = gnpTypeSelect.val();
+    const gnpCount = GNP_TYPE_MAPPING[gnpType] || 0;
+    const total = snpPages + gnpCount;
+
+    console.log('Calculated values:', {
+        snpPages: snpPages,
+        gnpType: gnpType,
+        gnpCount: gnpCount,
+        total: total
+    });
+
+    gnpCountInput.val(gnpCount);
+    totalInput.val(total);
+}
+
+function calculateTotals() {
+    let totalSnp = 0;
+    let totalGnp = 0;
+    let totalPages = 0;
+    let totalJackets = 0;
+
+    $('.book-form-row').each(function() {
+        const $row = $(this);
+        const deleteCheckbox = $row.find('input[name$="-DELETE"]');
+
+        // Skip if marked for deletion
+        if (deleteCheckbox.length && deleteCheckbox.is(':checked')) {
+            return;
+        }
+
+        const bookName = $row.find('.book-name-select').val();
+        if (!bookName) return; // Skip empty rows
+
+        const snp = parseInt($row.find('.snp-pages-input').val()) || 0;
+        const gnp = parseInt($row.find('.gnp-count-input').val()) || 0;
+        const total = parseInt($row.find('.total-pages-input').val()) || 0;
+        const jackets = parseInt($row.find('.gnp-jackets-input').val()) || 0;
+
+        totalSnp += snp;
+        totalGnp += gnp;
+        totalPages += total;
+        totalJackets += jackets;
+    });
+
+    $('#total-snp').text(totalSnp);
+    $('#total-gnp').text(totalGnp);
+    $('#total-pages').text(totalPages);
+    $('#total-jackets').text(totalJackets);
+}
+
+function toggleB2Checkboxes($row) {
+    const bookName = $row.find('.book-name-select').val();
+    const $checkboxContainer = $row.find('.b2-checkboxes-row');
+
+    if (bookName === 'TOI B-2' || bookName === 'TIMS B-2') {
+        $checkboxContainer.slideDown(200);
+    } else {
+        $checkboxContainer.slideUp(200);
+        // Clear checkbox values when hidden to prevent stale data
+        $row.find('.balloon-printed-checkbox').prop('checked', false);
+        $row.find('.has-masthead-checkbox').prop('checked', false);
+    }
+}
+
+// === Auto-Collated Groups Functions ===
+function initializeAutoCollatedGroups() {
+    const rawValue = $('#id_auto_collated_groups').val();
+    const existingGroups = parseAutoCollatedValue(rawValue);
+
+    if (existingGroups.length) {
+        existingGroups.forEach(function(group) {
+            addAutoCollatedGroup(group);
+        });
+    }
+
+    refreshAutoCollatedOptions();
+    updateAutoCollatedEmptyState();
+    updateAutoCollatedValue();
+}
+
+function parseAutoCollatedValue(rawValue) {
+    if (!rawValue) {
+        return [];
+    }
+    try {
+        const parsed = JSON.parse(rawValue);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function getSelectedBookNames() {
+    const bookNames = [];
+    $('.book-form-row').each(function() {
+        const $row = $(this);
+        const deleteCheckbox = $row.find('input[name$="-DELETE"]');
+
+        if (deleteCheckbox.length && deleteCheckbox.is(':checked')) {
+            return;
+        }
+
+        const name = $row.find('.book-name-select').val();
+        if (name && bookNames.indexOf(name) === -1) {
+            bookNames.push(name);
+        }
+    });
+    return bookNames;
+}
+
+function populateAutoCollatedOptions($select, bookNames, selectedValues) {
+    $select.empty();
+    bookNames.forEach(function(name) {
+        const isSelected = selectedValues && selectedValues.indexOf(name) !== -1;
+        const $option = $('<option></option>').val(name).text(name);
+        if (isSelected) {
+            $option.prop('selected', true);
+        }
+        $select.append($option);
+    });
+}
+
+function refreshAutoCollatedOptions() {
+    const bookNames = getSelectedBookNames();
+    $('.auto-collated-select').each(function() {
+        const $select = $(this);
+        const selectedValues = $select.val() || [];
+        populateAutoCollatedOptions($select, bookNames, selectedValues);
+    });
+    updateAutoCollatedAvailability();
+    updateAutoCollatedValue();
+}
+
+function addAutoCollatedGroup(selectedValues) {
+    const bookNames = getSelectedBookNames();
+    const $group = $(
+        '<div class="auto-collated-group border border-gray-200 rounded-lg p-4 bg-gray-50">' +
+            '<div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">' +
+                '<div class="md:col-span-11">' +
+                    '<label class="block text-xs font-medium text-gray-700 mb-1">Group</label>' +
+                    '<select multiple class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent auto-collated-select"></select>' +
+                '</div>' +
+                '<div class="md:col-span-1">' +
+                    '<button type="button" class="w-full px-2 py-2 bg-transparent hover:bg-red-50 text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-300 rounded-lg transition-all remove-auto-collated-btn">' +
+                        '<i class="bi bi-trash"></i>' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>'
+    );
+
+    populateAutoCollatedOptions($group.find('.auto-collated-select'), bookNames, selectedValues || []);
+    $('#autoCollatedGroups').append($group);
+    updateAutoCollatedEmptyState();
+    updateAutoCollatedAvailability();
+    updateAutoCollatedValue();
+}
+
+function removeAutoCollatedGroup($group) {
+    $group.remove();
+    updateAutoCollatedEmptyState();
+    updateAutoCollatedValue();
+}
+
+function updateAutoCollatedValue() {
+    const groups = [];
+    $('.auto-collated-select').each(function() {
+        const values = $(this).val() || [];
+        if (values.length > 0) {
+            groups.push(values);
+        }
+    });
+    $('#id_auto_collated_groups').val(JSON.stringify(groups));
+}
+
+function updateAutoCollatedEmptyState() {
+    const hasGroups = $('.auto-collated-group').length > 0;
+    $('#autoCollatedEmptyState').toggle(!hasGroups);
+}
+
+function updateAutoCollatedAvailability() {
+    const hasBooks = getSelectedBookNames().length > 0;
+    const $addBtn = $('#addAutoCollatedGroupBtn');
+    $addBtn.prop('disabled', !hasBooks);
+    $addBtn.toggleClass('opacity-50 cursor-not-allowed', !hasBooks);
+}
+
+function addNewBook() {
+    const totalForms = $('#id_books-TOTAL_FORMS');
+    const formIdx = parseInt(totalForms.val());
+
+    // Get the first form as template
+    const $templateRow = $('.book-form-row').first().clone();
+
+    // Update form index
+    $templateRow.attr('data-form-index', formIdx);
+
+    // Clear values and update IDs/names
+    $templateRow.find('input, select').each(function() {
+        const $field = $(this);
+        const name = $field.attr('name');
+        const id = $field.attr('id');
+
+        if (name) {
+            const newName = name.replace(/books-\d+-/, 'books-' + formIdx + '-');
+            $field.attr('name', newName);
+        }
+
+        if (id) {
+            const newId = id.replace(/id_books-\d+-/, 'id_books-' + formIdx + '-');
+            $field.attr('id', newId);
+        }
+
+        // Clear value
+        if ($field.is('select')) {
+            $field.val('');
+        } else if ($field.attr('type') === 'hidden' && name && name.includes('-id')) {
+            $field.remove(); // Remove ID field for new forms
+        } else if ($field.attr('type') !== 'hidden') {
+            // Set numeric fields to 0, others to empty
+            if ($field.hasClass('snp-pages-input') || $field.hasClass('gnp-jackets-input')) {
+                $field.val('0');
+            } else if ($field.hasClass('gnp-count-input') || $field.hasClass('total-pages-input')) {
+                $field.val('0'); // Auto-calculated fields
+            } else if ($field.is(':checkbox')) {
+                $field.prop('checked', false); // Uncheck checkboxes
+            } else {
+                $field.val('');
+            }
+        }
+    });
+
+    // Add remove button for new rows (always show for dynamically added rows)
+    const $removeCol = $templateRow.find('.md\\:col-span-1').last();
+    if ($removeCol.length > 0) {
+        // Clear existing content and add the delete button
+        $removeCol.html(
+            '<button type="button" class="w-full px-2 py-2 bg-transparent hover:bg-red-50 text-gray-400 hover:text-red-600 border border-gray-200 hover:border-red-300 rounded-lg transition-all remove-book-btn">' +
+            '<i class="bi bi-trash"></i>' +
+            '</button>' +
+            '<input type="checkbox" name="books-' + formIdx + '-DELETE" id="id_books-' + formIdx + '-DELETE" style="display:none;">'
+        );
+    }
+
+    // Remove error messages
+    $templateRow.find('.alert-danger').remove();
+
+    // Append to formset
+    $('#bookFormset').append($templateRow);
+
+    // Bind events
+    bindFormEvents($templateRow);
+
+    // Initialize checkbox visibility for new row
+    toggleB2Checkboxes($templateRow);
+
+    // Update total forms count
+    totalForms.val(formIdx + 1);
+
+    refreshAutoCollatedOptions();
+
+    // Recalculate totals
+    calculateTotals();
+}
+
+function removeBook($row) {
+    const deleteCheckbox = $row.find('input[name$="-DELETE"]');
+
+    if (deleteCheckbox.length) {
+        // Mark for deletion (existing record)
+        deleteCheckbox.prop('checked', true);
+        $row.hide();
+    } else {
+        // Remove from DOM (new record)
+        $row.remove();
+
+        // Update form indices
+        let index = 0;
+        $('.book-form-row').each(function() {
+            $(this).attr('data-form-index', index);
+            index++;
+        });
+
+        // Update TOTAL_FORMS
+        $('#id_books-TOTAL_FORMS').val(index);
+    }
+
+    refreshAutoCollatedOptions();
+
+    calculateTotals();
+}
+
+// === Competitor Form Functions ===
+function initializeCompetitorForms() {
+    // Initialize calculations for all competitor book detail forms
+    $('.competitor-form-row').each(function() {
+        const $competitorRow = $(this);
+        // Find all book detail forms within this competitor
+        $competitorRow.find('.bg-white.border').each(function() {
+            updateCompetitorBookCalculations($(this));
+        });
+    });
+}
+
+function updateCompetitorBookCalculations($bookRow) {
+    console.log('updateCompetitorBookCalculations called for row:', $bookRow);
+
+    const snpInput = $bookRow.find('.comp-book-snp-input');
+    const gnpTypeSelect = $bookRow.find('.comp-book-gnp-type-select');
+    const gnpCountInput = $bookRow.find('.comp-book-gnp-count-input');
+    const totalInput = $bookRow.find('.comp-book-total-input');
+
+    console.log('Found competitor book elements:', {
+        snpInput: snpInput.length,
+        gnpTypeSelect: gnpTypeSelect.length,
+        gnpCountInput: gnpCountInput.length,
+        totalInput: totalInput.length
+    });
+
+    const snpPages = parseInt(snpInput.val()) || 0;
+    const gnpType = gnpTypeSelect.val();
+    const gnpCount = GNP_TYPE_MAPPING[gnpType] || 0;
+    const total = snpPages + gnpCount;
+
+    console.log('Calculated competitor book values:', {
+        snpPages: snpPages,
+        gnpType: gnpType,
+        gnpCount: gnpCount,
+        total: total
+    });
+
+    gnpCountInput.val(gnpCount);
+    totalInput.val(total);
+}
+
+function addNewCompetitor() {
+    const totalForms = $('#id_competitors-TOTAL_FORMS');
+    const formIdx = parseInt(totalForms.val());
+
+    // Get the first form as template
+    const $templateRow = $('.competitor-form-row').first().clone();
+
+    // Update form index
+    $templateRow.attr('data-form-index', formIdx);
+
+    // Clear values and update IDs/names for ALL fields (competitor + nested books)
+    $templateRow.find('input, select, textarea').each(function() {
+        const $field = $(this);
+        const name = $field.attr('name');
+        const id = $field.attr('id');
+
+        if (name) {
+            // Handle both competitor fields and nested book fields
+            // Pattern: competitors-0-books-0-field_name -> competitors-N-books-0-field_name
+            const newName = name.replace(/competitors-\d+(-books-\d+)?-/, 'competitors-' + formIdx + '$1-');
+            $field.attr('name', newName);
+        }
+
+        if (id) {
+            const newId = id.replace(/id_competitors-\d+(-books-\d+)?-/, 'id_competitors-' + formIdx + '$1-');
+            $field.attr('id', newId);
+        }
+
+        // Update for attributes on labels
+        const forAttr = $field.attr('for');
+        if (forAttr) {
+            const newFor = forAttr.replace(/id_competitors-\d+(-books-\d+)?-/, 'id_competitors-' + formIdx + '$1-');
+            $field.attr('for', newFor);
+        }
+
+        // Clear value
+        if ($field.is('select')) {
+            $field.val('');
+        } else if ($field.attr('type') === 'hidden' && name && (name.includes('-id') || name.includes('-DELETE'))) {
+            // Keep management form hidden fields, remove instance IDs
+            if (!name.includes('TOTAL_FORMS') && !name.includes('INITIAL_FORMS') && !name.includes('MIN_NUM') && !name.includes('MAX_NUM')) {
+                $field.remove();
+            }
+        } else if ($field.attr('type') === 'checkbox') {
+            // Uncheck all checkboxes (for innovation field)
+            $field.prop('checked', false);
+        } else if ($field.attr('type') !== 'hidden') {
+            // Set numeric book fields to 0, others to empty
+            if ($field.hasClass('comp-book-snp-input') || $field.hasClass('comp-book-gnp-jacket-input') || $field.hasClass('comp-book-books-input')) {
+                $field.val('0');
+            } else if ($field.hasClass('comp-book-gnp-count-input') || $field.hasClass('comp-book-total-input')) {
+                $field.val('0'); // Auto-calculated fields
+            } else {
+                $field.val('');
+            }
+        }
+    });
+
+    // Update nested book formset management form
+    const bookManagementInputs = $templateRow.find('input[name^="competitors-' + formIdx + '-books-"]');
+    bookManagementInputs.each(function() {
+        const $input = $(this);
+        const name = $input.attr('name');
+        if (name && name.includes('INITIAL_FORMS')) {
+            $input.val('0'); // New competitor has no initial book forms
+        } else if (name && name.includes('TOTAL_FORMS')) {
+            $input.val('2'); // Always 2 book forms (Main and Supplement)
+        }
+    });
+
+    // Set book_type for nested book forms: first form = Main, second form = Supplement
+    $templateRow.find('select.comp-book-type-select').each(function(index) {
+        if (index === 0) {
+            $(this).val('Main');
+        } else if (index === 1) {
+            $(this).val('Supplement');
+        }
+    });
+
+    // Remove error messages
+    $templateRow.find('.bg-red-50').remove();
+
+    // Append to formset
+    $('#competitorFormset').append($templateRow);
+
+    // Update competitor formset total forms count
+    totalForms.val(formIdx + 1);
+
+    // Initialize calculations for the new competitor's books
+    $templateRow.find('.bg-white.border').each(function() {
+        updateCompetitorBookCalculations($(this));
+    });
+}
+
+function removeCompetitor($row) {
+    const deleteCheckbox = $row.find('input[name$="-DELETE"]');
+
+    if (deleteCheckbox.length) {
+        // Mark for deletion (existing record)
+        deleteCheckbox.prop('checked', true);
+        $row.hide();
+    } else {
+        // Remove from DOM (new record)
+        $row.remove();
+
+        // Update form indices
+        let index = 0;
+        $('.competitor-form-row').each(function() {
+            $(this).attr('data-form-index', index);
+            index++;
+        });
+
+        // Update TOTAL_FORMS
+        $('#id_competitors-TOTAL_FORMS').val(index);
+    }
+}
+
+// === ET Fields Toggle Functions ===
+function initializeETFieldsToggle() {
+    // Set initial state based on et_had_2_books checkbox
+    toggleETFields();
+}
+
+function toggleETFields() {
+    const etHad2Books = $('#id_gnp-et_had_2_books').is(':checked');
+
+    if (etHad2Books) {
+        // Hide single ET checkbox, show ET B-1 and ET B-2 checkboxes
+        $('.et-single-checkbox').hide();
+        $('.et-book-checkbox').show();
+
+        // Clear the ET checkbox value when hidden
+        $('#id_gnp-et').prop('checked', false);
+    } else {
+        // Show single ET checkbox, hide ET B-1 and ET B-2 checkboxes
+        $('.et-single-checkbox').show();
+        $('.et-book-checkbox').hide();
+
+        // Clear ET B-1 and ET B-2 checkbox values when hidden
+        $('#id_gnp-et_b1').prop('checked', false);
+        $('#id_gnp-et_b2').prop('checked', false);
+    }
+}
+</script>
+{% endblock %}

@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-f!l0m0b9j31ukf%vjdh%3p7mili7(c!u&2_n&2dy4=8eldlrm*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'upload_from_pi',
+    'handler_default_data',
+    'pagination_dash',
 ]
 
 MIDDLEWARE = [
@@ -55,7 +57,7 @@ ROOT_URLCONF = 'production_kpi.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Add project-level templates directory
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,3 +127,15 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+USE_L10N = True
+TIME_FORMAT = 'h:i A'  # 12-hour format with AM/PM
+DATETIME_FORMAT = 'N j, Y, P'
+
+# Authentication Settings
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/pagination/'  # Redirect to pagination home after login
+LOGOUT_REDIRECT_URL = '/accounts/login/'  # Redirect to login page after logout
+
+# Allow GET requests for logout (default is POST only)
+# Note: For production, consider using POST with CSRF token for better security

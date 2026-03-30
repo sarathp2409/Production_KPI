@@ -1,0 +1,3 @@
+1) Multiple entries for the same date and folder - Add up PO and Select Last P.F (Case in Point - Pune 13 - June)
+
+2) All Datetime data should be localised for "Asia/Kolkata"

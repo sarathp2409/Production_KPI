@@ -1,0 +1,2 @@
+plant_id,plant_name,issue_date,competitor_name,main_snp_pages,main_gnp_pages_type,main_number_of_gnp_jacket,main_number_of_books,supp_snp_pages,supp_gnp_pages_type,supp_number_of_gnp_jacket,supp_number_of_books,innovation_1,innovation_2,innovation_3,comment
+MAIN36,Nacharam,2023-01-01,Sample Competitor,24,4 Pg Vantage,1,2,8,,0,1,Center Panorama,,,Example comment

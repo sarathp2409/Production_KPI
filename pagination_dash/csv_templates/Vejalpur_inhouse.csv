@@ -1,0 +1,4 @@
+plant_id,plant_name,issue_date,book_name,snp_pages,gnp_pages_type,number_of_gnp_jackets,balloon_printed,has_masthead,book_order,remarks_toi,remarks_others,first_time_execution_info,gnp_et,gnp_et_b1,gnp_et_b2,gnp_et_had_2_books,gnp_mt,gnp_mirror,gnp_nbt,gnp_tims,gnp_remarks
+MAIN37,Vejalpur,2023-01-01,TOI B-1,24,4 Pg Vantage,1,,,0,Example remark for TOI,Example remark for others,,Yes,,,,,,,Yes,
+MAIN37,Vejalpur,2023-01-01,TOI B-2,16,,0,Yes,Yes,1,,,,,,,,,,,,
+MAIN37,Vejalpur,2023-01-01,TIMS B-1,20,,0,,,2,,,,,,,,,,,,

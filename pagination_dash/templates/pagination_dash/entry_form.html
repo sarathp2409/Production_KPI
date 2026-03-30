@@ -1,0 +1,284 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pagination & Innovation Entry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900">Pagination & Innovation Entry</h1>
+        </div>
+        {% if plant_slug %}
+        <div>
+          <a href="{% url 'pagination_dash:plant_home' plant_slug=plant_slug %}"
+             class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 text-sm font-medium hover:bg-gray-50">
+            Home
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <form method="post" class="space-y-8">
+        {% csrf_token %}
+
+        {% if duplicate_edit_url %}
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4 mb-4">
+          <div class="flex items-start gap-3">
+            <svg class="h-5 w-5 text-red-600 mt-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.5a.75.75 0 00-1.5 0v4a.75.75 0 001.5 0v-4zM10 14a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+            </svg>
+            <div class="flex-1">
+              <p class="text-sm text-red-800">
+                An entry already exists for this location and date.
+              </p>
+              <div class="mt-3">
+                <a href="{{ duplicate_edit_url }}" class="inline-flex items-center rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-red-700">
+                  Edit Existing Entry
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Location</label>
+              {% if selected_plant %}
+                <!-- Hidden input carries the value if present -->
+                {{ entry_form.plant_name }}
+                <div class="mt-1 inline-flex items-center px-3 py-2 rounded-md bg-gray-100 text-gray-900 text-sm">
+                  {{ selected_plant }}
+                </div>
+              {% else %}
+                {{ entry_form.plant_name }}
+              {% endif %}
+              {% if entry_form.plant_name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ entry_form.plant_name.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Issue Date</label>
+              {{ entry_form.issue_date }}
+              {% if entry_form.issue_date.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ entry_form.issue_date.errors.0 }}</p>
+              {% endif %}
+            </div>
+            <div class="md:justify-self-end w-full md:w-auto space-y-3">
+              <div id="total-general" class="rounded-lg border border-indigo-100 bg-indigo-50 p-4">
+                <div class="text-xs uppercase tracking-wide text-indigo-700">Total pagination</div>
+                <div id="total-general-value" class="text-2xl font-semibold text-indigo-900 mt-1">0</div>
+              </div>
+              <div id="total-sahibabad" class="rounded-lg border border-indigo-100 bg-indigo-50 p-4 hidden">
+                <div class="text-xs uppercase tracking-wide text-indigo-700">Total pagination</div>
+                <div class="mt-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-indigo-700">Delhi</span>
+                    <span id="total-delhi" class="text-xl font-semibold text-indigo-900">0</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-indigo-700">Noida</span>
+                    <span id="total-noida" class="text-xl font-semibold text-indigo-900">0</span>
+                  </div>
+                </div>
+              </div>
+              <div id="total-airoli" class="rounded-lg border border-indigo-100 bg-indigo-50 p-4 hidden">
+                <div class="text-xs uppercase tracking-wide text-indigo-700">Total pagination</div>
+                <div class="mt-3 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-indigo-700">Mumbai</span>
+                    <span id="total-mumbai" class="text-xl font-semibold text-indigo-900">0</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-indigo-700">Thane</span>
+                    <span id="total-thane" class="text-xl font-semibold text-indigo-900">0</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-indigo-700">Navi Mumbai</span>
+                    <span id="total-navi" class="text-xl font-semibold text-indigo-900">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination Grid -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          {{ pag_formset.management_form }}
+          <h2 class="text-base font-medium text-gray-900">Pagination details</h2>
+          <div class="overflow-x-auto mt-4">
+            <table class="min-w-full text-sm text-gray-700">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-4 py-2 text-left font-medium text-gray-700 w-40">&nbsp;</th>
+                  <th class="px-4 py-2 text-left font-medium text-gray-700">Book-1</th>
+                  <th class="px-4 py-2 text-left font-medium text-gray-700">Book-2</th>
+                  <th class="px-4 py-2 text-left font-medium text-gray-700">Sec-2/Sec-3</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                {% for row in default_rows %}
+                <tr class="hover:bg-gray-50" data-category="default">
+                  <td class="px-4 py-3 font-medium text-gray-900">{{ row.label }}</td>
+                  {% for f in row.forms %}
+                  <td class="px-4 py-3">
+                    {{ f.product }}{{ f.book }}
+                    {{ f.pages }}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+                {% for row in sahibabad_rows %}
+                <tr class="hover:bg-gray-50 hidden" data-category="sahibabad">
+                  <td class="px-4 py-3 font-medium text-gray-900">{{ row.label }}</td>
+                  {% for f in row.forms %}
+                  <td class="px-4 py-3">
+                    {{ f.product }}{{ f.book }}
+                    {{ f.pages }}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+                {% for row in airoli_rows %}
+                <tr class="hover:bg-gray-50 hidden" data-category="airoli">
+                  <td class="px-4 py-3 font-medium text-gray-900">{{ row.label }}</td>
+                  {% for f in row.forms %}
+                  <td class="px-4 py-3">
+                    {{ f.product }}{{ f.book }}
+                    {{ f.pages }}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Innovation Grid -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          {{ inv_formset.management_form }}
+          <h2 class="text-base font-medium text-gray-900">Innovation details</h2>
+          <div class="overflow-x-auto mt-4">
+            <table class="min-w-full text-sm text-gray-700">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th class="px-4 py-2 text-left font-medium text-gray-700 w-40">&nbsp;</th>
+                  <th class="px-4 py-2 text-left font-medium text-gray-700">Book-1</th>
+                  <th class="px-4 py-2 text-left font-medium text-gray-700">Book-2</th>
+                  <th class="px-4 py-2 text-left font-medium text-gray-700">Sec-2/Sec-3</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                {% for row in innovation_rows %}
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 font-medium text-gray-900">{{ row.label }}</td>
+                  {% for f in row.forms %}
+                  <td class="px-4 py-3">
+                    {{ f.product }}{{ f.book }}
+                    {{ f.details }}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Free-text sections -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">First-time Innovation or Execution, if any</label>
+            {{ entry_form.first_time_innovation }}
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Challenges and Resolution</label>
+            {{ entry_form.other_complexities }}
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+          {% if cancel_url %}
+            <a href="{{ cancel_url }}" class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</a>
+          {% else %}
+            <a href="." class="inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Reset</a>
+          {% endif %}
+          <button type="submit" class="inline-flex items-center px-5 py-2.5 rounded-md bg-indigo-600 text-white font-medium shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Submit</button>
+        </div>
+      </form>
+
+      <script>
+        const plantSelect = document.getElementById('id_plant_name');
+        const totalGeneral = document.getElementById('total-general');
+        const totalGeneralValue = document.getElementById('total-general-value');
+        const totalSahibabad = document.getElementById('total-sahibabad');
+        const totalDelhi = document.getElementById('total-delhi');
+        const totalNoida = document.getElementById('total-noida');
+        const totalAiroli = document.getElementById('total-airoli');
+        const totalMumbai = document.getElementById('total-mumbai');
+        const totalThane = document.getElementById('total-thane');
+        const totalNavi = document.getElementById('total-navi');
+        const sahibabadName = '{{ sahibabad_plant_name|escapejs }}';
+        const airoliName = '{{ airoli_plant_name|escapejs }}';
+
+        const updateTotal = () => {
+          const totals = { GENERAL: 0, DELHI: 0, NOIDA: 0, MUMBAI: 0, THANE: 0, NAVI_MUMBAI: 0 };
+          document.querySelectorAll('input.page-input').forEach((el) => {
+            const row = el.closest('tr');
+            if (row && row.classList.contains('hidden')) return;
+            const group = el.dataset.group || 'GENERAL';
+            const v = parseInt(el.value || '0', 10);
+            if (!Number.isNaN(v)) {
+              totals[group] = (totals[group] || 0) + v;
+            }
+          });
+          if (totalGeneralValue) totalGeneralValue.innerText = totals.GENERAL || 0;
+          if (totalDelhi) totalDelhi.innerText = totals.DELHI || 0;
+          if (totalNoida) totalNoida.innerText = totals.NOIDA || 0;
+          if (totalMumbai) totalMumbai.innerText = totals.MUMBAI || 0;
+          if (totalThane) totalThane.innerText = totals.THANE || 0;
+          if (totalNavi) totalNavi.innerText = totals.NAVI_MUMBAI || 0;
+        };
+
+        const selectedPlant = '{{ selected_plant|escapejs }}';
+        const updateLayout = () => {
+          const effectiveValue = plantSelect ? plantSelect.value : selectedPlant;
+          const isSahibabad = effectiveValue === sahibabadName;
+          const isAiroli = effectiveValue === airoliName;
+          document.querySelectorAll('[data-category="default"]').forEach((row) => {
+            row.classList.toggle('hidden', isSahibabad || isAiroli);
+          });
+          document.querySelectorAll('[data-category="sahibabad"]').forEach((row) => {
+            row.classList.toggle('hidden', !isSahibabad);
+          });
+          document.querySelectorAll('[data-category="airoli"]').forEach((row) => {
+            row.classList.toggle('hidden', !isAiroli);
+          });
+          if (totalGeneral) totalGeneral.classList.toggle('hidden', isSahibabad || isAiroli);
+          if (totalSahibabad) totalSahibabad.classList.toggle('hidden', !isSahibabad);
+          if (totalAiroli) totalAiroli.classList.toggle('hidden', !isAiroli);
+          updateTotal();
+        };
+
+        document.addEventListener('input', (e) => {
+          if (e.target && e.target.classList.contains('page-input')) updateTotal();
+        });
+        if (plantSelect) {
+          plantSelect.addEventListener('change', updateLayout);
+        }
+
+        // Initialize layout based on current selection
+        updateLayout();
+      </script>
+    </div>
+  </body>
+  </html>

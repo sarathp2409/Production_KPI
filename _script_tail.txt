@@ -1,0 +1,50 @@
+<script>
+        const plantSelect = document.getElementById('id_plant_name');
+        const totalGeneral = document.getElementById('total-general');
+        const totalGeneralValue = document.getElementById('total-general-value');
+        const totalSahibabad = document.getElementById('total-sahibabad');
+        const totalDelhi = document.getElementById('total-delhi');
+        const totalNoida = document.getElementById('total-noida');
+        const sahibabadName = '{{ sahibabad_plant_name|escapejs }}';
+
+        const updateTotal = () => {
+          const totals = { GENERAL: 0, DELHI: 0, NOIDA: 0 };
+          document.querySelectorAll('input.page-input').forEach((el) => {
+            const group = el.dataset.group || 'GENERAL';
+            const v = parseInt(el.value || '0', 10);
+            if (!Number.isNaN(v)) {
+              totals[group] = (totals[group] || 0) + v;
+            }
+          });
+          if (totalGeneralValue) totalGeneralValue.innerText = totals.GENERAL || 0;
+          if (totalDelhi) totalDelhi.innerText = totals.DELHI || 0;
+          if (totalNoida) totalNoida.innerText = totals.NOIDA || 0;
+        };
+
+        const updateLayout = () => {
+          const isSahibabad = plantSelect && plantSelect.value === sahibabadName;
+          document.querySelectorAll('[data-category="default"]').forEach((row) => {
+            row.classList.toggle('hidden', isSahibabad);
+          });
+          document.querySelectorAll('[data-category="sahibabad"]').forEach((row) => {
+            row.classList.toggle('hidden', !isSahibabad);
+          });
+          if (totalGeneral) totalGeneral.classList.toggle('hidden', isSahibabad);
+          if (totalSahibabad) totalSahibabad.classList.toggle('hidden', !isSahibabad);
+          updateTotal();
+        };
+
+        document.addEventListener('input', (e) => {
+          if (e.target && e.target.classList.contains('page-input')) updateTotal();
+        });
+        if (plantSelect) {
+          plantSelect.addEventListener('change', updateLayout);
+        }
+
+        // Initialize layout based on current selection
+        updateLayout();
+      </script>
+    </div>
+  </body>
+  </html>
+

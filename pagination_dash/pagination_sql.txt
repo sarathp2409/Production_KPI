@@ -1,0 +1,49 @@
+SELECT issue_date, edition, total_pages, desk, uv, integrated_pullout, gnp_pages, reflong, issueid_id  FROM public.book_wise_details 
+WHERE plant_name='Bhosari' AND issue_date='2025-10-06' 
+AND Desk IN (
+    'TOI Sec-2',
+    'TOI',
+    'Others-Eng',
+    'TOI-MAIN',
+    'Others-Clasi',
+    'TOI Sec-3',
+    'Others-Edu',
+    'Others-Prop',
+    'Others-Asc',
+    'TIMS-Sec 2',
+    'TIMS'
+);
+
+
+UV Data for a particular plant and month
+SELECT 
+    issue_date,
+	product_name,
+    STRING_AGG(DISTINCT innovation, ', ' ORDER BY innovation) AS unique_innovations
+FROM public.innovations
+WHERE plant_name = 'Kandivali' AND uv = 'true'
+	AND EXTRACT(YEAR FROM issue_date) = 2025
+    AND EXTRACT(MONTH FROM issue_date) = 9
+GROUP BY issue_date, product_name
+ORDER BY issue_date, product_name;
+
+
+
+SELECT issue_date, edition, total_pages, desk, uv, integrated_pullout, gnp_pages, issueid_id  FROM public.book_wise_details 
+WHERE plant_name='Sahibabad' AND issue_date BETWEEN '2025-07-24' AND '2025-09-29'
+AND Desk IN (
+    'TOI Sec-2',
+    'TOI',
+    'TOI-MAIN',
+    'TOI Sec-3'
+);
+
+
+SELECT issue_date, edition, total_pages, desk, uv, integrated_pullout, gnp_pages, issueid_id  FROM public.book_wise_details 
+WHERE plant_name='Sahibabad' AND issue_date IN ('2025-09-18', '2025-09-20', '2025-09-21', '2025-09-22', '2025-09-24', '2025-09-25', '2025-09-27', '2025-09-28', '2025-09-29')
+AND Desk IN (
+    'TOI Sec-2',
+    'TOI',
+    'TOI-MAIN',
+    'TOI Sec-3'
+);

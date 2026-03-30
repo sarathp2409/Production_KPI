@@ -1,0 +1,7 @@
+We need to identify the Books that are auto-collated. Hence, from the Book Name selected in the pagination create form, we also need to capture the group of Books which where auto-collated. There can be more than 1 group of Auto collated books
+For example, if the user has made entries for TOI B-1, TOI B-2, TIMS B-1, TIMS B-2 and TOI Supp-1, the User might have printed TOI B-2, TIMS B-1 as 1 group of Auto collated Books and TIMS B-2 and TOI Supp-1 as the second group of Auto Collated Books. The chances are there can be 0, 1 or more than 1 group of Auto Collated books which are not pre-defined.
+
+Hence we need to provide this option for the user to select the Book names for a group of Auto Collated books if it exists.
+
+This data can be captured after the Extra Miles and Before the Competitor Data Section. 
+First Strategise the best way to capture this data and then create a plan to make modifications in the form

@@ -1,0 +1,16 @@
+{
+    "sahibabad": ["Hindustan Times", "Hindustan", "Dainik Bhaskar", "Dainik Jagran", "Mint"],
+    "manesar": ["Hindustan Times", "Hindustan", "Dainik Bhaskar", "Dainik Jagran", "Mint"],
+    "kandivali": ["Hindustan Times", "Loksatta", "Lokmat", "Dainik Bhaskar", "Mint"],
+    "airoli": ["Hindustan Times", "Loksatta", "Lokmat", "Dainik Bhaskar", "Mint"],
+    "bommasandra": ["The Hindu", "Deccan Herald", "Indian Express", "V K", "Prajavani", "Vijayawani"],
+    "chemmencherry": ["The Hindu", "Daily Thanthi", "Dinamalar", "Hindu Tamil", "Indian Express"],
+    "saltlake": ["The Telegraph", "Ananda Bazar Patrika"],
+    "bhosari": ["Hindustan Times", "Sakal", "Lokmat", "Indian Express"],
+    "nacharam": ["Deccan Chronicle", "The Hindu", "Namasthe Telangana", "Enadu", "Sakshi"],
+    "vejalpur": ["Hindustan Times", "Nav-Gujarat Samay", "Divya Bhaskar", "Gujarat Samachar", "Sandesh"],
+    "chinhat": ["Hindustan Times", "Dainik Jagran"],
+    "butibori": ["Hindustan Times",  "Sakal", "Lokmat"],
+    "trivandrum": ["The Hindu", "Indian Express"],
+    "baroda": ["Hindustan Times", "Nav-Gujarat Samay", "Divya Bhaskar", "Gujarat Samachar", "Sandesh"]
+}
